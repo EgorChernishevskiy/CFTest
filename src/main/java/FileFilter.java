@@ -1,9 +1,8 @@
 import java.io.*;
-import java.nio.file.*;
 import java.util.*;
 import java.util.regex.Pattern;
 
-public class FileFilterUtil {
+public class FileFilter {
     private static final Pattern INTEGER_PATTERN = Pattern.compile("^-?\\d+$");
     private static final Pattern FLOAT_PATTERN = Pattern.compile("^-?\\d*\\.\\d+$|^-?\\d+\\.\\d*[eE]-?\\d+$");
 
@@ -13,11 +12,11 @@ public class FileFilterUtil {
     private final boolean append;
     private final boolean fullStats;
 
-    private final List<Integer> integers = new ArrayList<>();
+    private final List<Long> integers = new ArrayList<>();
     private final List<Double> floats = new ArrayList<>();
     private final List<String> strings = new ArrayList<>();
 
-    public FileFilterUtil(List<String> inputFiles, String outputPath, String prefix, boolean append, boolean fullStats) {
+    public FileFilter(List<String> inputFiles, String outputPath, String prefix, boolean append, boolean fullStats) {
         this.inputFiles = inputFiles;
         this.outputPath = outputPath;
         this.prefix = prefix;
@@ -46,7 +45,7 @@ public class FileFilterUtil {
 
     private void classifyAndStore(String line) {
         if (INTEGER_PATTERN.matcher(line).matches()) {
-            integers.add(Integer.parseInt(line));
+            integers.add(Long.parseLong(line));
         } else if (FLOAT_PATTERN.matcher(line).matches()) {
             floats.add(Double.parseDouble(line));
         } else {
@@ -76,7 +75,7 @@ public class FileFilterUtil {
     private void printStatistics() {
         printStat("Целые числа", integers);
         printStat("Вещественные числа", floats);
-        printStat("Строки", strings);
+        printStringStat("Строки", strings);
     }
 
     private <T extends Number> void printStat(String type, List<T> data) {
@@ -86,19 +85,18 @@ public class FileFilterUtil {
             double max = data.stream().mapToDouble(Number::doubleValue).max().orElse(0);
             double sum = data.stream().mapToDouble(Number::doubleValue).sum();
             double avg = sum / data.size();
-            System.out.printf("  Min: %f, Max: %f, Sum: %f, Avg: %f%n", min, max, sum, avg);
+            System.out.printf("Минимальное: %f, Максимальное: %f, Сумма: %f, Среднее: %f%n", min, max, sum, avg);
         }
     }
 
-    private void printStat(String type, List<String> data) {
+    private void printStringStat(String type, List<String> data) {
         System.out.println(type + ": " + data.size());
         if (fullStats && !data.isEmpty()) {
             int minLength = data.stream().mapToInt(String::length).min().orElse(0);
             int maxLength = data.stream().mapToInt(String::length).max().orElse(0);
-            System.out.printf("  Самая короткая строка: %d, Самая длинная строка: %d%n", minLength, maxLength);
+            System.out.printf("Самая короткая: %d, Самая длинная: %d%n", minLength, maxLength);
         }
     }
-
     public static void main(String[] args) {
         List<String> files = new ArrayList<>();
         String outputPath = ".";
@@ -122,6 +120,6 @@ public class FileFilterUtil {
             return;
         }
 
-        new FileFilterUtil(files, outputPath, prefix, append, fullStats).processFiles();
+        new FileFilter(files, outputPath, prefix, append, fullStats).processFiles();
     }
 }

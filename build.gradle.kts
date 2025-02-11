@@ -1,19 +1,27 @@
 plugins {
+    id("application")
     id("java")
 }
 
 group = "org.example"
 version = "1.0-SNAPSHOT"
 
-repositories {
-    mavenCentral()
+application {
+    mainClass.set("FileFilter")
 }
 
-dependencies {
-    testImplementation(platform("org.junit:junit-bom:5.10.0"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
 }
 
-tasks.test {
-    useJUnitPlatform()
+tasks.jar {
+    archiveBaseName.set("util")
+    archiveVersion.set("")
+    archiveClassifier.set("")
+
+    manifest {
+        attributes["Main-Class"] = application.mainClass.get()
+    }
 }
